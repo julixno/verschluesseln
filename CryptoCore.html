@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoCore | Dark Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* Sofort-Fix für den Hintergrund */
+        body {
+            background-color: #0f172a !important; /* Tiefes Dunkelblau */
+            color: #f8fafc;
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background: #1e293b; /* Dunkle Karte */
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #38bdf8; /* Hellblau */
+            font-weight: 600;
+        }
+
+        .menu, .section-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button {
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            margin-top: 10px;
+        }
+
+        input, textarea {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #38bdf8;
+        }
+
+        .hidden { display: none; }
+        
+        .label {
+            font-size: 11px;
+            color: #64748b;
+            text-align: left;
+            margin-bottom: -8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="mainMenu" class="menu">
+            <h2>CryptoCore</h2>
+            <button onclick="show('gen')">🔑 Key generieren</button>
+            <button onclick="show('enc')">🔒 Verschlüsseln</button>
+            <button onclick="show('dec')">🔓 Entschlüsseln</button>
+        </div>
+
+        <div id="gen" class="hidden section-content">
+            <h2>Generator</h2>
+            <button id="doGen">Neuen Key erzeugen</button>
+            <div class="label">Dein Key</div>
+            <textarea id="outKey" rows="3" readonly></textarea>
+            <button class="btn-back" onclick="show('mainMenu')">Zurück</button>
+        </div>
+
+        <div id="enc" class="hidden section-content">
+            <h2>Encrypt</h2>
+            <input type="text" id="inKeyEnc" placeholder="Key (Hex)">
+            <input type="text" id="msgEnc" placeholder="Nachricht">
+            <button id="doEnc">Verschlüsseln</button>
+            <div class="label">Ergebnis</div>
+            <textarea id="outEnc" rows="3" readonly></textarea>
+            <button class="btn-back" onclick="show('mainMenu')">Zurück</button>
+        </div>
+
+        <div id="dec" class="hidden section-content">
+            <h2>Decrypt</h2>
+            <input type="text" id="inKeyDec" placeholder="Key (Hex)">
+            <textarea id="msgDec" placeholder="Verschlüsselter Code" rows="3"></textarea>
+            <button id="doDec">Entschlüsseln</button>
+            <div class="label">Klartext</div>
+            <textarea id="outDec" rows="2" readonly></textarea>
+            <button class="btn-back" onclick="show('mainMenu')">Zurück</button>
+        </div>
+    </div>
+
+    <script>
+        function show(id) {
+            document.querySelectorAll('.menu, .section-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        // Hilfsfunktionen für Krypto
+        const toHex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+        const fromHex = h => new Uint8Array(h.match(/.{1,2}/g).map(x => parseInt(x, 16))).buffer;
+
+        document.getElementById('doGen').onclick = async () => {
+            const key = await crypto.subtle.generateKey({name:"AES-CBC", length:256}, true, ["encrypt", "decrypt"]);
+            const exp = await crypto.subtle.exportKey("raw", key);
+            document.getElementById('outKey').value = toHex(exp);
+        };
+
+        document.getElementById('doEnc').onclick = async () => {
+            const keyHex = document.getElementById('inKeyEnc').value;
+            const msg = document.getElementById('msgEnc').value;
+            const iv = crypto.getRandomValues(new Uint8Array(16));
+            const key = await crypto.subtle.importKey("raw", fromHex(keyHex), "AES-CBC", false, ["encrypt"]);
+            const enc = await crypto.subtle.encrypt({name:"AES-CBC", iv}, key, new TextEncoder().encode(msg));
+            document.getElementById('outEnc').value = toHex(iv) + toHex(enc);
+        };
+
+        document.getElementById('doDec').onclick = async () => {
+            const keyHex = document.getElementById('inKeyDec').value;
+            const full = document.getElementById('msgDec').value;
+            const iv = fromHex(full.slice(0,32));
+            const data = fromHex(full.slice(32));
+            const key = await crypto.subtle.importKey("raw", fromHex(keyHex), "AES-CBC", false, ["decrypt"]);
+            const dec = await crypto.subtle.decrypt({name:"AES-CBC", iv}, key, data);
+            document.getElementById('outDec').value = new TextDecoder().decode(dec);
+        };
+    </script>
+</body>
+</html>
