@@ -1,0 +1,179 @@
+/* 1. Moderne CSS-Variablen (Custom Properties) */
+:root {
+    --bg-body: #020617;
+    --bg-card: rgba(15, 23, 42, 0.85);
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --primary: #38bdf8;
+    --primary-hover: #0ea5e9;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --ring-color: rgba(56, 189, 248, 0.3);
+    
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 24px;
+    
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 2. Keyframe-Animationen (Neu hinzugefügt) */
+@keyframes slideInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeInStagger {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 3. Basis-Styling */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(circle at top left, #1e293b, var(--bg-body) 80%);
+    color: var(--text-main);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+.container {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 40px;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 420px;
+    text-align: center;
+    
+    /* Haupt-Eintrittsanimation für die Karte */
+    animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* 4. Elemente und verzögerte Kaskaden-Animationen */
+h2, .menu > *, .section-content > * {
+    opacity: 0; /* Starten unsichtbar für die Animation */
+    animation: fadeInStagger 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Die Elemente erscheinen nacheinander (Staggering) */
+h2 { animation-delay: 0.1s; }
+.label { animation-delay: 0.2s; }
+input { animation-delay: 0.3s; }
+button { animation-delay: 0.4s; }
+.btn-back { animation-delay: 0.5s; }
+
+h2 {
+    margin: 0 0 24px 0;
+    color: var(--text-main);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+}
+
+.menu, .section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 5. Interaktive Elemente (mit Micro-Animationen) */
+button {
+    background: var(--primary);
+    color: var(--bg-body);
+    border: none;
+    padding: 12px 20px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 15px;
+    transition: var(--transition);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+button:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px); /* Fühlt sich jetzt noch flüssiger an */
+    box-shadow: 0 6px 15px var(--ring-color);
+}
+
+button:active {
+    transform: translateY(1px) scale(0.98); /* Leichtes Schrumpfen beim Klicken */
+}
+
+.btn-back {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-color);
+    box-shadow: none;
+    margin-top: 8px;
+}
+
+.btn-back:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    transform: translateY(-2px);
+    box-shadow: none;
+}
+
+input, textarea {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 14px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    outline: none;
+    width: 100%;
+    transition: var(--transition);
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted);
+}
+
+input:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--ring-color);
+    background: rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px); /* Leichtes Anheben bei Fokus */
+}
+
+.hidden { 
+    display: none !important; 
+}
+
+.label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-align: left;
+    margin-bottom: -10px;
+    display: block;
+}
