@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoCore</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #0a0707;
+    --bg-card: #120c0c;
+    --bg-inset: #1a1010;
+    --red: #e6293b;
+    --red-bright: #ff3b4e;
+    --red-dim: #7a1620;
+    --text-main: #f2e9e9;
+    --text-muted: #8a7373;
+    --border: rgba(230, 41, 59, 0.18);
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background:
+        radial-gradient(circle at 20% 0%, rgba(230,41,59,0.10), transparent 45%),
+        radial-gradient(circle at 90% 100%, rgba(230,41,59,0.06), transparent 40%),
+        var(--bg);
+    color: var(--text-main);
+    font-family: var(--sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: 20px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.012) 0px,
+        rgba(255,255,255,0.012) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    z-index: 999;
+}
+
+.window {
+    width: 92%;
+    max-width: 420px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.02);
+    overflow: hidden;
+    animation: rise 0.5s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+@keyframes rise {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.titlebar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: linear-gradient(180deg, #171010, #120c0c);
+    border-bottom: 1px solid var(--border);
+}
+
+.dots { display: flex; gap: 6px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: #3a2626; }
+.dot.live {
+    background: var(--red);
+    box-shadow: 0 0 8px var(--red-bright);
+    animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.titlebar-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    margin-left: auto;
+    text-transform: uppercase;
+}
+
+.body-pad { padding: 28px 28px 26px; }
+
+h2 {
+    margin: 0 0 22px;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.04em;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+h2::before {
+    content: "";
+    width: 3px;
+    height: 15px;
+    background: var(--red);
+    display: inline-block;
+    border-radius: 1px;
+}
+
+.menu, .section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+button {
+    background: var(--red);
+    color: #100404;
+    border: none;
+    padding: 13px 18px;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: var(--sans);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s ease;
+}
+
+button:hover { background: var(--red-bright); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(230,41,59,0.3); }
+button:active { transform: translateY(0) scale(0.98); }
+button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-back {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    box-shadow: none;
+    margin-top: 4px;
+}
+.btn-back:hover { background: rgba(230,41,59,0.06); color: var(--text-main); box-shadow: none; transform: none; }
+
+.label {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin: 4px 0 -4px;
+}
+
+input, textarea {
+    background: var(--bg-inset);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 13px 14px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    font-family: var(--mono);
+    outline: none;
+    width: 100%;
+    resize: none;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+input::placeholder, textarea::placeholder { color: #5a4747; font-family: var(--sans); }
+
+input:focus, textarea:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(230,41,59,0.15);
+}
+
+textarea[readonly] { color: var(--red-bright); }
+
+.filedrop {
+    position: relative;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: var(--bg-inset);
+    padding: 16px 14px;
+    text-align: left;
+    transition: border-color 0.18s ease, background 0.18s ease;
+}
+.filedrop:hover { border-color: var(--red-dim); }
+.filedrop input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.filedrop-text {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--text-muted);
+}
+.filedrop-text.has-file { color: var(--red-bright); }
+
+.status {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-muted);
+    min-height: 16px;
+}
+.status.ok { color: var(--red-bright); }
+.status.err { color: #ff6b6b; }
+
+a.download-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 13px 18px;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: var(--sans);
+    text-decoration: none;
+    background: var(--bg-inset);
+    color: var(--red-bright);
+    border: 1px solid var(--red-dim);
+    transition: all 0.18s ease;
+}
+a.download-link:hover { background: rgba(230,41,59,0.1); transform: translateY(-1px); }
+
+.hidden { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+    .window { animation: none; }
+    .dot.live { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="window">
+    <div class="titlebar">
+        <div class="dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot live"></div>
+        </div>
+        <div class="titlebar-label">AES-256-CBC</div>
+    </div>
+
+    <div class="body-pad">
+        <div id="mainMenu" class="menu">
+            <h2>CryptoCore</h2>
+            <button onclick="show('gen')">Key generieren</button>
+            <button onclick="show('textMenu')">Text</button>
+            <button onclick="show('fileMenu')">Dateien</button>
+        </div>
+
+        <div id="gen" class="hidden section-content">
+            <h2>Generator</h2>
+            <button id="doGen">Neuen Key erzeugen</button>
+            <div class="label">Dein Key</div>
+            <textarea id="outKey" rows="3" readonly></textarea>
+            <button class="btn-back" onclick="show('mainMenu')">Zurück</button>
+        </div>
+
+        <!-- Text: Untermenü -->
+        <div id="textMenu" class="hidden section-content">
+            <h2>Text</h2>
+            <button onclick="show('enc')">Verschlüsseln</button>
+            <button onclick="show('dec')">Entschlüsseln</button>
+            <button class="btn-back" onclick="show('mainMenu')">Zurück</button>
+        </div>
+
+        <div id="enc" class="hidden section-content">
+            <h2>Text verschlüsseln</h2>
+            <input type="text" id="inKeyEnc" placeholder="Key (Hex)">
+            <input type="text" id="msgEnc" placeholder="Nachricht">
+            <button id="doEnc">Verschlüsseln</button>
+            <div class="label">Ergebnis</div>
+            <textarea id="outEnc" rows="3" readonly></textarea>
+            <button class="btn-back" onclick="show('textMenu')">Zurück</button>
+        </div>
+
+        <div id="dec" class="hidden section-content">
+            <h2>Text entschlüsseln</h2>
+            <input type="text" id="inKeyDec" placeholder="Key (Hex)">
+            <textarea id="msgDec" placeholder="Verschlüsselter Code" rows="3"></textarea>
+            <button id="doDec">Entschlüsseln</button>
+            <div class="label">Klartext</div>
+            <textarea id="outDec" rows="2" readonly></textarea>
+            <button class="btn-back" onclick="show('textMenu')">Zurück</button>
+        </div>
+
+        <!-- Dateien: Untermenü -->
+        <div id="fileMenu" class="hidden section-content">
+            <h2>Dateien</h2>
+            <button onclick="show('fileEnc')">Verschlüsseln</button>
+            <button onclick="show('fileDec')">Entschlüsseln</button>
+            <button class="btn-back" onclick="show('mainMenu')">Zurück</button>
+        </div>
+
+        <div id="fileEnc" class="hidden section-content">
+            <h2>Datei verschlüsseln</h2>
+            <input type="text" id="inKeyFileEnc" placeholder="Key (Hex)">
+            <div class="filedrop">
+                <span class="filedrop-text" id="fileEncLabel">Datei auswählen …</span>
+                <input type="file" id="fileEncInput">
+            </div>
+            <button id="doFileEnc">Verschlüsseln</button>
+            <div class="status" id="fileEncStatus"></div>
+            <div id="fileEncDownloadWrap"></div>
+            <button class="btn-back" onclick="show('fileMenu')">Zurück</button>
+        </div>
+
+        <div id="fileDec" class="hidden section-content">
+            <h2>Datei entschlüsseln</h2>
+            <input type="text" id="inKeyFileDec" placeholder="Key (Hex)">
+            <div class="filedrop">
+                <span class="filedrop-text" id="fileDecLabel">Verschlüsselte Datei auswählen …</span>
+                <input type="file" id="fileDecInput">
+            </div>
+            <button id="doFileDec">Entschlüsseln</button>
+            <div class="status" id="fileDecStatus"></div>
+            <div id="fileDecDownloadWrap"></div>
+            <button class="btn-back" onclick="show('fileMenu')">Zurück</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function show(id) {
+    document.querySelectorAll('.menu, .section-content').forEach(el => el.classList.add('hidden'));
+    document.getElementById(id).classList.remove('hidden');
+}
+
+const toHex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2, '0')).join('');
+const fromHex = h => new Uint8Array(h.match(/.{1,2}/g).map(x => parseInt(x, 16))).buffer;
+
+// --- Key generieren ---
+document.getElementById('doGen').onclick = async () => {
+    const key = await crypto.subtle.generateKey({name:"AES-CBC", length:256}, true, ["encrypt", "decrypt"]);
+    const exp = await crypto.subtle.exportKey("raw", key);
+    document.getElementById('outKey').value = toHex(exp);
+};
+
+// --- Text verschlüsseln/entschlüsseln ---
+document.getElementById('doEnc').onclick = async () => {
+    const keyHex = document.getElementById('inKeyEnc').value;
+    const msg = document.getElementById('msgEnc').value;
+    const iv = crypto.getRandomValues(new Uint8Array(16));
+    const key = await crypto.subtle.importKey("raw", fromHex(keyHex), "AES-CBC", false, ["encrypt"]);
+    const enc = await crypto.subtle.encrypt({name:"AES-CBC", iv}, key, new TextEncoder().encode(msg));
+    document.getElementById('outEnc').value = toHex(iv) + toHex(enc);
+};
+
+document.getElementById('doDec').onclick = async () => {
+    const keyHex = document.getElementById('inKeyDec').value;
+    const full = document.getElementById('msgDec').value;
+    const iv = fromHex(full.slice(0,32));
+    const data = fromHex(full.slice(32));
+    const key = await crypto.subtle.importKey("raw", fromHex(keyHex), "AES-CBC", false, ["decrypt"]);
+    const dec = await crypto.subtle.decrypt({name:"AES-CBC", iv}, key, data);
+    document.getElementById('outDec').value = new TextDecoder().decode(dec);
+};
+
+// --- Datei-Auswahl Anzeige ---
+function bindFileLabel(inputId, labelId, fallback) {
+    const input = document.getElementById(inputId);
+    const label = document.getElementById(labelId);
+    input.addEventListener('change', () => {
+        if (input.files && input.files[0]) {
+            label.textContent = input.files[0].name;
+            label.classList.add('has-file');
+        } else {
+            label.textContent = fallback;
+            label.classList.remove('has-file');
+        }
+    });
+}
+bindFileLabel('fileEncInput', 'fileEncLabel', 'Datei auswählen …');
+bindFileLabel('fileDecInput', 'fileDecLabel', 'Verschlüsselte Datei auswählen …');
+
+function setStatus(id, text, cls) {
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+function showDownload(wrapId, blob, filename) {
+    const wrap = document.getElementById(wrapId);
+    wrap.innerHTML = '';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.className = 'download-link';
+    a.textContent = '⬇ ' + filename + ' herunterladen';
+    wrap.appendChild(a);
+}
+
+// --- Datei verschlüsseln ---
+document.getElementById('doFileEnc').onclick = async () => {
+    const wrap = document.getElementById('fileEncDownloadWrap');
+    wrap.innerHTML = '';
+    try {
+        const keyHex = document.getElementById('inKeyFileEnc').value.trim();
+        const fileInput = document.getElementById('fileEncInput');
+        const file = fileInput.files[0];
+        if (!keyHex) { setStatus('fileEncStatus', 'Bitte einen Key eingeben.', 'err'); return; }
+        if (!file) { setStatus('fileEncStatus', 'Bitte eine Datei auswählen.', 'err'); return; }
+
+        setStatus('fileEncStatus', 'Verschlüssele …');
+        const buf = await file.arrayBuffer();
+        const iv = crypto.getRandomValues(new Uint8Array(16));
+        const key = await crypto.subtle.importKey("raw", fromHex(keyHex), "AES-CBC", false, ["encrypt"]);
+        const enc = await crypto.subtle.encrypt({name:"AES-CBC", iv}, key, buf);
+
+        const outBytes = new Uint8Array(iv.byteLength + enc.byteLength);
+        outBytes.set(iv, 0);
+        outBytes.set(new Uint8Array(enc), iv.byteLength);
+
+        const blob = new Blob([outBytes], {type: 'application/octet-stream'});
+        showDownload('fileEncDownloadWrap', blob, file.name + '.enc');
+        setStatus('fileEncStatus', 'Fertig — Datei bereit zum Download.', 'ok');
+    } catch (e) {
+        setStatus('fileEncStatus', 'Fehler: ' + e.message, 'err');
+    }
+};
+
+// --- Datei entschlüsseln ---
+document.getElementById('doFileDec').onclick = async () => {
+    const wrap = document.getElementById('fileDecDownloadWrap');
+    wrap.innerHTML = '';
+    try {
+        const keyHex = document.getElementById('inKeyFileDec').value.trim();
+        const fileInput = document.getElementById('fileDecInput');
+        const file = fileInput.files[0];
+        if (!keyHex) { setStatus('fileDecStatus', 'Bitte einen Key eingeben.', 'err'); return; }
+        if (!file) { setStatus('fileDecStatus', 'Bitte eine Datei auswählen.', 'err'); return; }
+
+        setStatus('fileDecStatus', 'Entschlüssele …');
+        const buf = await file.arrayBuffer();
+        if (buf.byteLength < 17) { setStatus('fileDecStatus', 'Datei ist zu klein / ungültig.', 'err'); return; }
+
+        const iv = buf.slice(0, 16);
+        const data = buf.slice(16);
+        const key = await crypto.subtle.importKey("raw", fromHex(keyHex), "AES-CBC", false, ["decrypt"]);
+        const dec = await crypto.subtle.decrypt({name:"AES-CBC", iv}, key, data);
+
+        const blob = new Blob([dec], {type: 'application/octet-stream'});
+        const outName = file.name.endsWith('.enc') ? file.name.slice(0, -4) : ('entschluesselt_' + file.name);
+        showDownload('fileDecDownloadWrap', blob, outName);
+        setStatus('fileDecStatus', 'Fertig — Datei bereit zum Download.', 'ok');
+    } catch (e) {
+        setStatus('fileDecStatus', 'Fehler: Key falsch oder Datei beschädigt.', 'err');
+    }
+};
+</script>
+</body>
+</html>
